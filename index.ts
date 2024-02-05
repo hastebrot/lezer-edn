@@ -1,18 +1,5 @@
 import { type Tree } from "@lezer/common";
-import { buildParser } from "@lezer/generator";
-
-const Parser = buildParser(`
-  @top Program { expression }
-
-  expression { Name | Number | BinaryExpression }
-
-  BinaryExpression { "(" expression ("+" | "-") expression ")" }
-
-  @tokens {
-    Name { @asciiLetter+ }
-    Number { @digit+ }
-  }
-`);
+import { buildParser, buildParserFile } from "@lezer/generator";
 
 function renderTree(tree: Tree) {
   let items = "";
@@ -30,6 +17,12 @@ function renderTree(tree: Tree) {
 }
 
 if (import.meta.main) {
-  const tree = Parser.parse("(a+(1-2))");
+  const grammar = await Bun.file("./json.grammar").text();
+  const Parser = buildParser(grammar);
+  const parser = buildParserFile(grammar).parser;
+  console.log(parser);
+
+  const input = "[1, 2, 3, 4]";
+  const tree = Parser.parse(input);
   console.log(renderTree(tree));
 }
